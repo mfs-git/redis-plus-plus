@@ -1,10 +1,5 @@
-project(redis++)
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    cmake_minimum_required(VERSION 3.0.0)
-else()
-    cmake_minimum_required(VERSION 2.8.0)
-endif()
+cmake_minimum_required(VERSION 3.6)
+project(redis++ VERSION 1.1.2)
 
 if (NOT DEFINED REDIS_PLUS_PLUS_CXX_STANDARD)
     set(REDIS_PLUS_PLUS_CXX_STANDARD 11)
@@ -58,3 +53,44 @@ install(TARGETS ${SHARED_LIB}
 set(HEADER_PATH "sw/redis++")
 file(GLOB HEADERS "${PROJECT_SOURCE_DIR}/*.h*")
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${HEADER_PATH})
+
+
+################### creating package ################
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(OS6432 "amd64")
+else()
+    set(OS6432 "i386")
+endif()
+
+EXECUTE_PROCESS(
+        COMMAND python -c "import platform;print(platform.dist()[0])"
+        OUTPUT_VARIABLE LINUX_DISTRO
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+EXECUTE_PROCESS(
+        COMMAND python -c "import platform;print(platform.dist()[1])"
+        OUTPUT_VARIABLE LINUX_VER
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+EXECUTE_PROCESS(
+        COMMAND lsb_release -cs
+        OUTPUT_VARIABLE LINUX_CODE_NAME
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_VENDOR "https://github.com/sewenew/redis-plus-plus")
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}-${LINUX_CODE_NAME}-${LINUX_VER}-${OS6432}")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libhiredis-dev")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "https://github.com/sewenew/redis-plus-plus")
+set(CPACK_PACKAGE_CONTACT "https://github.com/sewenew/redis-plus-plus")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "https://github.com/sewenew/redis-plus-plus")
+
+include(CPack)
